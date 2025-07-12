@@ -16,15 +16,16 @@ export default function usecheckAuth() {
       const { data: session } = await supabase.auth.getSession();
 
       if (session && session.session) {
-        // console.log(session,session,"user")
+        console.log(session,session,"user")
         const { data, error } = await supabase
-          .from("profiles")
+          .from("user_profile")
           .select("*")
-          .eq("id", session.session.user.id)
+          .eq("user_id", session.session.user.id)
           .single();
-
         isLoggedIn.current = true
-        dispatch(login({ user: session.session.user, session: session.session, profile: data }))
+        // dispatch(login({ user: session.session.user, session: session.session, profile: data }))
+        dispatch(login({ user: session.session.user, session: session.session,profile:data }))
+
       }
     }
     checkSession();
@@ -32,14 +33,15 @@ export default function usecheckAuth() {
     const { data: subscribe } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         if (!isLoggedIn) {
-      console.log(event, "user", session)
 
           const { data, error } = await supabase
-            .from("profiles")
+            .from("user_profile")
             .select("*")
-            .eq("id", session.session.user.id)
+            .eq("user_id", session.session.user.id)
             .single();
           dispatch(login({ user: session.user, session, profile: data }))
+          // dispatch(login({ user: session.user, session }))
+
         }
     isLoggedIn.current=true
 

@@ -10,7 +10,7 @@ export const AuthRoute = ({ children }) => {
     const navigate = useNavigate()
     useEffect(() => {
         if (isRendered && !session) {
-            navigate("/auth");
+            navigate("/login");
         }
     }, [isRendered,session, navigate]);
 
