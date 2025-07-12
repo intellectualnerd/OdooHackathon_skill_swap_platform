@@ -33,7 +33,7 @@ if (error) {
 }
 else{
 
-    navigate("/")
+window.location.href = `${import.meta.env.VITE_BASE_URL}`;
   
 }
     console.log({
@@ -123,12 +123,12 @@ checkAlreadyLoggedIn();
                 </button>
               </div>
               <div className="flex justify-end mt-2">
-                <a
-                  href="#"
-                  className="text-sm text-slate-400 hover:text-slate-300 transition-colors"
+                <div
+                  onClick={()=>navigate("/forgot-pass")}
+                  className="text-sm text-slate-400 hover:text-slate-300 transition-colors cursor-pointer"
                 >
                   Forgot password?
-                </a>
+                </div>
               </div>
             </div>
 

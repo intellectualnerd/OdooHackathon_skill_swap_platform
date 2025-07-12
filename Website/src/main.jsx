@@ -29,7 +29,8 @@ import Profile from './Pages/App/Profile/Profile';
 import Requests from './Pages/App/Requests/requests';
 import Error_404 from './Pages/Error/Error_404/Error_404';
 import Error_500 from './Pages/Error/Error_500/Error_500';
-
+import ForgotPassword from './Pages/App/Login/ForgotPassword';
+import UpdatePassword from './Pages/App/Login/UpdatePassword';
 
 
 // auth 
@@ -50,8 +51,10 @@ const router = createBrowserRouter([
         index: true,
         element:
 
+<AuthRoute>
 
-          <Home />,
+          <Home />
+</AuthRoute>,
       },
       {
         path: "/product",
@@ -65,17 +68,37 @@ const router = createBrowserRouter([
         path: "/login",
         element: <Login />,
       },
+         {
+        path: "/forgot-pass",
+        element: <ForgotPassword />,
+      },
+        {
+        path: "/update-password",
+        element: <UpdatePassword />,
+      },
       {
         path: "/signup",
         element: <Signup />,
       },
       {
         path: "/profile",
-        element: <Profile />,
+        element:
+        <AuthRoute>
+
+        <Profile />
+        </AuthRoute>
+        
+        ,
       },
       {
         path: "/requests",
-        element: <Requests />,
+        element:
+        <AuthRoute>
+
+        <Requests />
+        </AuthRoute>
+        
+        ,
       },
       // {
       //   path: "/projects",

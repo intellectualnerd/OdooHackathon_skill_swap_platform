@@ -1,29 +1,28 @@
 import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { supabase } from "../../../utils/supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
+export default function UpdatePassword() {
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleReset = async (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/update-password`,
+    const { error } = await supabase.auth.updateUser({
+      password: password,
     });
 
     setLoading(false);
 
     if (error) {
-      alert("Error sending reset email: " + error.message);
+      alert("Error updating password: " + error.message);
     } else {
-      alert("Password reset email sent! Please check your inbox.");
-      setEmail("");
+      alert("Password updated successfully!");
       navigate("/login");
     }
   };
@@ -33,26 +32,26 @@ export default function ForgotPassword() {
       <div className="w-full max-w-md">
         <div className="bg-slate-800 p-6 sm:p-8 shadow-lg rounded-xl">
           <h1 className="text-2xl font-bold text-white text-center mb-4">
-            Forgot Password
+            Update Password
           </h1>
           <p className="text-sm text-slate-400 text-center mb-6">
-            Enter your email to receive a password reset link.
+            Enter your new password below.
           </p>
-          <form onSubmit={handleReset} className="space-y-6">
+          <form onSubmit={handleUpdate} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">
-                Email Address
+                New Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FontAwesomeIcon icon={faEnvelope} className="text-slate-500" />
+                  <FontAwesomeIcon icon={faLock} className="text-slate-500" />
                 </div>
                 <input
-                  type="email"
+                  type="password"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
                   className="w-full bg-slate-700 text-slate-200 pl-10 pr-4 py-3 rounded-lg border border-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-500"
                 />
               </div>
@@ -63,22 +62,9 @@ export default function ForgotPassword() {
               disabled={loading}
               className="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-lg transition-all"
             >
-              {loading ? "Sending..." : "Send Reset Link"}
-              <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+              {loading ? "Updating..." : "Update Password"}
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-slate-500">
-              Back to
-              <span
-                onClick={() => navigate("/login")}
-                className="ml-1 text-slate-400 hover:text-slate-300 font-medium cursor-pointer"
-              >
-                Login
-              </span>
-            </p>
-          </div>
         </div>
       </div>
     </div>

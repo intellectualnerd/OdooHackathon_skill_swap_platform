@@ -14,7 +14,7 @@ export default function usecheckAuth() {
     const checkSession = async () => {
 
       const { data: session } = await supabase.auth.getSession();
-
+console.log("checked")
       if (session && session.session) {
         console.log(session,session,"user")
         const { data, error } = await supabase
@@ -23,6 +23,7 @@ export default function usecheckAuth() {
           .eq("user_id", session.session.user.id)
           .single();
         isLoggedIn.current = true
+      
         // dispatch(login({ user: session.session.user, session: session.session, profile: data }))
         dispatch(login({ user: session.session.user, session: session.session,profile:data }))
 

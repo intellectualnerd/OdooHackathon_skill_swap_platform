@@ -8,177 +8,14 @@ import {
 
 import { supabase } from "../../../utils/supabaseClient";
 import { useSelector } from "react-redux";
-const skills = [
-  "Web Development",
-  "Graphic Design",
-  "Content Writing",
-  "Photography",
-  "Video Editing",
-  "Social Media Management",
-  "SEO",
-  "Data Analysis",
-  "Mobile App Development",
-  "UI/UX Design",
-  "Copywriting",
-  "Translation",
-  "Music Production",
-  "Cooking",
-  "Language Teaching",
-  "Fitness Training",
-  "Accounting",
-  "Legal Advice",
-  "Marketing",
-  "Public Speaking",
-  "Gardening",
-  "DIY Crafts",
-  "Interior Design",
-  "Fashion Design",
-];
-
-const users = [
-  {
-    id: 1,
-    name: "Alex Johnson",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-    skillsOffered: ["Web Development", "SEO", "Data Analysis"],
-    skillsWanted: ["Graphic Design", "Video Editing"],
-    location: "New York, USA",
-    availability: "Weekdays",
-  },
-  {
-    id: 2,
-    name: "Sarah Miller",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-    skillsOffered: ["Graphic Design", "UI/UX Design"],
-    skillsWanted: ["Content Writing", "SEO"],
-    location: "London, UK",
-    availability: "Weekends",
-  },
-  {
-    id: 3,
-    name: "Carlos Rodriguez",
-    image: "https://randomuser.me/api/portraits/men/75.jpg",
-    skillsOffered: ["Video Editing", "Photography"],
-    skillsWanted: ["Social Media Management", "Marketing"],
-    location: "Madrid, Spain",
-    availability: "Available Now",
-  },
-  {
-    id: 4,
-    name: "Priya Patel",
-    image: "https://randomuser.me/api/portraits/women/63.jpg",
-    skillsOffered: ["Content Writing", "Copywriting"],
-    skillsWanted: ["Web Development", "Data Analysis"],
-    location: "Mumbai, India",
-    availability: "Weekdays",
-  },
-  {
-    id: 5,
-    name: "James Wilson",
-    image: "https://randomuser.me/api/portraits/men/81.jpg",
-    skillsOffered: ["Fitness Training", "Public Speaking"],
-    skillsWanted: ["Music Production", "DIY Crafts"],
-    location: "Sydney, Australia",
-    availability: "Weekends",
-  },
-  {
-    id: 6,
-    name: "Emma Chen",
-    image: "https://randomuser.me/api/portraits/women/22.jpg",
-    skillsOffered: ["Language Teaching", "Translation"],
-    skillsWanted: ["Cooking", "Gardening"],
-    location: "Toronto, Canada",
-    availability: "Available Now",
-  },
-];
 
 export default function SkillSwapApp() {
-  const { profile, user } = useSelector((state) => state.auth);
-
+   const { profile, user } = useSelector((state) => state.auth);
   const [skillsOffered, setSkillsOffered] = useState([]);
   const [skillsWanted, setSkillsWanted] = useState([]);
+  const [users, setUsers] = useState([]); 
+  const [filteredUsers, setFilteredUsers] = useState([]); 
 
-  // console.log(profile,"a",user)
-  const fetchAllOfferedSkills = async (setSkillsOffered) => {
-    const { data, error } = await supabase
-      .from("user_skills_offered")
-      .select("skills_offered", { distinct: true });
-
-    if (error) {
-      console.error("Error fetching offered skills:", error.message);
-      return;
-    }
-
-    // Remove nulls and duplicates
-    const uniqueSkills = [
-      ...new Set(data.map((item) => item.skills_offered).filter(Boolean)),
-    ];
-    setSkillsOffered(uniqueSkills);
-  };
-  const fetchAllWantedSkills = async (setSkillsWanted) => {
-    const { data, error } = await supabase
-      .from("user_skills_wanted")
-      .select("skills_wanted", { distinct: true });
-
-    if (error) {
-      console.error("Error fetching wanted skills:", error.message);
-      return;
-    }
-
-    const uniqueSkills = [
-      ...new Set(data.map((item) => item.skills_wanted).filter(Boolean)),
-    ];
-    setSkillsWanted(uniqueSkills);
-  };
-const fetchPublicUsersWithSkills = async (setUsers) => {
-  // Step 1: Get public user profiles
-  const { data: profiles, error: profileError } = await supabase
-    .from("user_profile")
-    .select("user_id, name, email, image_url, location, availability")
-    .eq("profile_status", "public");
-
-  if (profileError) {
-    console.error("Error fetching profiles:", profileError.message);
-    return;
-  }
-
-  // Step 2: For each user, fetch their skills
-  const userData = await Promise.all(
-    profiles.map(async (user, index) => {
-      // Skills Offered
-      const { data: offered } = await supabase
-        .from("user_skills_offered")
-        .select("skills_offered")
-        .eq("user_id", user.user_id);
-
-      // Skills Wanted
-      const { data: wanted } = await supabase
-        .from("user_skills_wanted")
-        .select("skills_wanted")
-        .eq("user_id", user.user_id);
-
-      return {
-        id: index + 1,
-        name: user.name,
-        email: user.email,
-        image: user.image_url,
-        location: user.location,
-        availability: user.availability,
-        skillsOffered: offered?.map(skill => skill.skills_offered) || [],
-        skillsWanted: wanted?.map(skill => skill.skills_wanted) || [],
-      };
-    })
-  );
-
-  setUsers(userData);
-};
-
-  useEffect(() => {
-    fetchAllOfferedSkills(setSkillsOffered);
-    fetchAllWantedSkills(setSkillsWanted);
-  }, []);
-
-  const [filteredUsers, setFilteredUsers] = useState(users);
   const [filters, setFilters] = useState({
     skillWanted: "",
     skillOffered: "",
@@ -193,61 +30,186 @@ const fetchPublicUsersWithSkills = async (setUsers) => {
     message: "",
   });
 
+  const fetchAllOfferedSkills = async () => {
+    const { data, error } = await supabase
+      .from("user_skills_offered")
+      .select("skills_offered", { distinct: true });
+
+    if (!error) {
+      const uniqueSkills = [...new Set(data.map((item) => item.skills_offered).filter(Boolean))];
+      setSkillsOffered(uniqueSkills);
+    }
+  };
+
+  const fetchAllWantedSkills = async () => {
+    const { data, error } = await supabase
+      .from("user_skills_wanted")
+      .select("skills_wanted", { distinct: true });
+
+    if (!error) {
+      const uniqueSkills = [...new Set(data.map((item) => item.skills_wanted).filter(Boolean))];
+      setSkillsWanted(uniqueSkills);
+    }
+  };
+
+  const fetchPublicUsersWithSkills = async () => {
+  const { data: profiles, error } = await supabase
+    .from("user_profile")
+    .select("user_id, name, email, image_url, location, availability")
+    .eq("profile_status", "public");
+
+  if (error) {
+    console.error("Error fetching profiles:", error.message);
+    return;
+  }
+  const userData = await Promise.all(
+    profiles.map(async (userProfile, index) => {
+      // Skip current user
+      console.log(user,"in")
+      if (userProfile.user_id === user?.id) return null;
+
+      const { data: offered } = await supabase
+        .from("user_skills_offered")
+        .select("skills_offered")
+        .eq("user_id", userProfile.user_id);
+
+      const { data: wanted } = await supabase
+        .from("user_skills_wanted")
+        .select("skills_wanted")
+        .eq("user_id", userProfile.user_id);
+
+      return {
+        id: userProfile?.user_id,
+        name: userProfile.name,
+        email: userProfile.email,
+        image: userProfile.image_url,
+        location: userProfile.location,
+        availability: userProfile.availability,
+        skillsOffered: offered?.map((s) => s.skills_offered) || [],
+        skillsWanted: wanted?.map((s) => s.skills_wanted) || [],
+      };
+    })
+  );
+
+  const filteredData = userData.filter((u) => u !== null);
+
+  setUsers(filteredData);
+};
+
+
+const filterUsers = (userData) => {
+  const { skillWanted, skillOffered, name, availability } = filters;
+
+  const skillW = skillWanted.toLowerCase();
+  const skillO = skillOffered.toLowerCase();
+  const nameQuery = name.toLowerCase();
+  const avail = availability.toLowerCase();
+
+  const filtered = userData.filter((user) => {
+    const hasSkillWanted =
+      !skillW ||
+      user.skillsWanted.some((s) => s.toLowerCase().includes(skillW));
+
+    const hasSkillOffered =
+      !skillO ||
+      user.skillsOffered.some((s) => s.toLowerCase().includes(skillO));
+
+    const matchesName =
+      !nameQuery || user.name.toLowerCase().includes(nameQuery);
+
+    const matchesAvailability =
+      !avail || user.availability.toLowerCase().includes(avail);
+
+    return (
+      hasSkillWanted &&
+      hasSkillOffered &&
+      matchesName &&
+      matchesAvailability
+    );
+  });
+
+  setFilteredUsers(filtered);
+};
+
+
+  useEffect(() => {
+ 
+    if (users.length > 0) {
+      filterUsers(users);
+    }
+  }, [filters, users]);
+
+  useEffect(() => {
+    if(!user) return ;
+    fetchAllOfferedSkills();
+    fetchAllWantedSkills();
+    fetchPublicUsersWithSkills();
+  }, [user]);
+
   const handleChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
-
-  const filterUsers = () => {
-    const { skillWanted, skillOffered, name, availability } = filters;
-    const skillW = skillWanted.toLowerCase();
-    const skillO = skillOffered.toLowerCase();
-    const nameQuery = name.toLowerCase();
-    const avail = availability.toLowerCase();
-
-    const filtered = users.filter((user) => {
-      const hasSkillWanted =
-        !skillW ||
-        user.skillsOffered.some((s) => s.toLowerCase().includes(skillW));
-      const hasSkillOffered =
-        !skillO ||
-        user.skillsWanted.some((s) => s.toLowerCase().includes(skillO));
-      const matchesName =
-        !nameQuery || user.name.toLowerCase().includes(nameQuery);
-      const matchesAvailability =
-        !avail || user.availability.toLowerCase().includes(avail);
-
-      return (
-        hasSkillWanted && hasSkillOffered && matchesName && matchesAvailability
-      );
-    });
-
-    setFilteredUsers(filtered);
-  };
-
-  useEffect(() => {
-    filterUsers();
-  }, [filters]);
 
   const handleOpenModal = (user) => {
     setModalUser(user);
     setExchangeData({ skillYouWant: "", skillYouGive: "", message: "" });
   };
 
-  const handleCloseModal = () => {
-    setModalUser(null);
-  };
+  const handleCloseModal = () => setModalUser(null);
 
   const handleExchangeChange = (e) => {
     setExchangeData({ ...exchangeData, [e.target.name]: e.target.value });
   };
 
-  const handleSendRequest = () => {
-    console.log("To:", modalUser.name);
-    console.log("Want:", exchangeData.skillYouWant);
-    console.log("Give:", exchangeData.skillYouGive);
-    console.log("Msg:", exchangeData.message);
-    handleCloseModal();
-  };
+const handleSendRequest = async () => {
+  const fromUserId = user?.id;
+  const toUserId = modalUser?.id;
+
+  const { skillYouWant, skillYouGive, message } = exchangeData;
+
+  if (!fromUserId || !toUserId || !skillYouWant || !skillYouGive) {
+    alert("Missing required fields.");
+    return;
+  }
+
+  const { data: existing, error: checkError } = await supabase
+    .from("swap_requests")
+    .select("request_id")
+    .eq("from_user_id", fromUserId)
+    .eq("to_user_id", toUserId)
+    .eq("skill_offered", skillYouGive)
+    .eq("skill_wanted", skillYouWant);
+
+  if (checkError) {
+    console.error("Error checking existing request:", checkError.message);
+    return;
+  }
+
+  if (existing.length > 0) {
+    alert("You’ve already sent this request.");
+    return;
+  }
+
+  const { error: insertError } = await supabase.from("swap_requests").insert([
+    {
+      from_user_id: fromUserId,
+      to_user_id: toUserId,
+      skill_offered: skillYouGive,
+      skill_wanted: skillYouWant,
+      message,
+      status: "pending",
+    },
+  ]);
+
+  if (insertError) {
+    console.error("Insert failed:", insertError.message);
+    alert("Something went wrong.");
+    return;
+  }
+
+  alert("Request sent successfully!");
+  handleCloseModal();
+};
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 px-4">
