@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SkillInput from "./SkillInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -15,6 +15,8 @@ import {
 
 import { useNavigate } from "react-router-dom";
 export default function Signup() {
+
+
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -90,6 +92,15 @@ export default function Signup() {
       skillsWanted: [],
     });
   };
+ async function checkAlreadyLoggedIn(){
+    const { data: session } = await supabase.auth.getSession();
+    if(session && session.session){
+      navigate("/");
+    }   
+  }
+  useEffect(()=>{
+checkAlreadyLoggedIn();
+  },[])
 
   return (
     <div className="bg-slate-900 min-h-screen flex items-center justify-center p-4">
