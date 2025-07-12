@@ -48,11 +48,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         index: true,
-        element:<AuthRoute>
+        element:
 
 
           <Home />,
-        </AuthRoute> 
       },
       {
         path: "/product",
