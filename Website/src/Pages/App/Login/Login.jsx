@@ -32,9 +32,9 @@ if (error) {
   }
 }
 else{
-  if(data.user){
+
     navigate("/")
-  }
+  
 }
     console.log({
       email,

@@ -5,6 +5,8 @@ import {
   faClock,
   faExchangeAlt,
 } from "@fortawesome/free-solid-svg-icons";
+
+import { supabase } from "../../../utils/supabaseClient";
 import { useSelector } from "react-redux";
 const skills = [
   "Web Development",
@@ -91,9 +93,90 @@ const users = [
 ];
 
 export default function SkillSwapApp() {
+  const { profile, user } = useSelector((state) => state.auth);
 
-  const {profile,user}=useSelector(state=>state.auth)
-  console.log(profile,"a",user)
+  const [skillsOffered, setSkillsOffered] = useState([]);
+  const [skillsWanted, setSkillsWanted] = useState([]);
+
+  // console.log(profile,"a",user)
+  const fetchAllOfferedSkills = async (setSkillsOffered) => {
+    const { data, error } = await supabase
+      .from("user_skills_offered")
+      .select("skills_offered", { distinct: true });
+
+    if (error) {
+      console.error("Error fetching offered skills:", error.message);
+      return;
+    }
+
+    // Remove nulls and duplicates
+    const uniqueSkills = [
+      ...new Set(data.map((item) => item.skills_offered).filter(Boolean)),
+    ];
+    setSkillsOffered(uniqueSkills);
+  };
+  const fetchAllWantedSkills = async (setSkillsWanted) => {
+    const { data, error } = await supabase
+      .from("user_skills_wanted")
+      .select("skills_wanted", { distinct: true });
+
+    if (error) {
+      console.error("Error fetching wanted skills:", error.message);
+      return;
+    }
+
+    const uniqueSkills = [
+      ...new Set(data.map((item) => item.skills_wanted).filter(Boolean)),
+    ];
+    setSkillsWanted(uniqueSkills);
+  };
+const fetchPublicUsersWithSkills = async (setUsers) => {
+  // Step 1: Get public user profiles
+  const { data: profiles, error: profileError } = await supabase
+    .from("user_profile")
+    .select("user_id, name, email, image_url, location, availability")
+    .eq("profile_status", "public");
+
+  if (profileError) {
+    console.error("Error fetching profiles:", profileError.message);
+    return;
+  }
+
+  // Step 2: For each user, fetch their skills
+  const userData = await Promise.all(
+    profiles.map(async (user, index) => {
+      // Skills Offered
+      const { data: offered } = await supabase
+        .from("user_skills_offered")
+        .select("skills_offered")
+        .eq("user_id", user.user_id);
+
+      // Skills Wanted
+      const { data: wanted } = await supabase
+        .from("user_skills_wanted")
+        .select("skills_wanted")
+        .eq("user_id", user.user_id);
+
+      return {
+        id: index + 1,
+        name: user.name,
+        email: user.email,
+        image: user.image_url,
+        location: user.location,
+        availability: user.availability,
+        skillsOffered: offered?.map(skill => skill.skills_offered) || [],
+        skillsWanted: wanted?.map(skill => skill.skills_wanted) || [],
+      };
+    })
+  );
+
+  setUsers(userData);
+};
+
+  useEffect(() => {
+    fetchAllOfferedSkills(setSkillsOffered);
+    fetchAllWantedSkills(setSkillsWanted);
+  }, []);
 
   const [filteredUsers, setFilteredUsers] = useState(users);
   const [filters, setFilters] = useState({
@@ -185,7 +268,7 @@ export default function SkillSwapApp() {
               onChange={handleChange}
             >
               <option value="">Skill Wanted</option>
-              {skills.map((s) => (
+              {skillsWanted.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>
@@ -195,7 +278,7 @@ export default function SkillSwapApp() {
               onChange={handleChange}
             >
               <option value="">Skill Offered</option>
-              {skills.map((s) => (
+              {skillsOffered.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>
