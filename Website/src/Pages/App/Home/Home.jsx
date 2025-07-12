@@ -94,7 +94,7 @@ const users = [
 
 export default function SkillSwapApp() {
   const { profile, user } = useSelector((state) => state.auth);
-
+  console.log(profile,"a",user)
   const [skillsOffered, setSkillsOffered] = useState([]);
   const [skillsWanted, setSkillsWanted] = useState([]);
 
