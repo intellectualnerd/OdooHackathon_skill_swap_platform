@@ -30,6 +30,15 @@ import Requests from './Pages/App/Requests/requests';
 import Error_404 from './Pages/Error/Error_404/Error_404';
 import Error_500 from './Pages/Error/Error_500/Error_500';
 
+
+
+// auth 
+import usecheckAuth from './hooks/useauthcheck';
+import { AuthRoute } from './auth/AuthRoute';
+import { store } from './auth/authStore';
+import { Provider } from 'react-redux';
+
+
 const router = createBrowserRouter([
   {
     element: <AppLayout />,
@@ -39,7 +48,11 @@ const router = createBrowserRouter([
       {
         path: "/",
         index: true,
-        element: <Home />,
+        element:<AuthRoute>
+
+
+          <Home />,
+        </AuthRoute> 
       },
       {
         path: "/product",
@@ -85,6 +98,7 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  usecheckAuth();
   return (
     <RouterProvider router={router} />
   )
@@ -92,4 +106,12 @@ function App() {
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+root.render
+
+(
+<Provider store={store}> 
+  
+<App />
+</Provider>
+
+);

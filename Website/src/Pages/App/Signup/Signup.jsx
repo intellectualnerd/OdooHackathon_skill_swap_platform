@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SkillInput from "./SkillInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import { supabase } from "../../../utils/supabaseClient";
+
 import {
   faUser,
   faEnvelope,
@@ -12,8 +15,9 @@ import {
 
 import { useNavigate } from "react-router-dom";
 export default function Signup() {
-    
-      const navigate = useNavigate();
+
+
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -37,8 +41,44 @@ export default function Signup() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const { data: signup, error: signUpError } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+    });
+    if (signUpError) {
+      console.error("Signup failed:", signUpError.message);
+      return;
+    }
+    const userId = signup.user?.id;
+
+    if (userId) {
+      const { error: rpcError } = await supabase.rpc(
+        "signup_with_profile_and_skills",
+        {
+          p_user_id: userId,
+          p_email: formData.email,
+          p_name: formData.name,
+          p_location: formData.location,
+          p_availability: formData.availability,
+          p_profile_status: "public",
+          p_image_url: formData.photoURL,
+          p_skills_offered: formData.skillsOffered,
+          p_skills_wanted: formData.skillsWanted,
+        }
+      );
+
+      if (rpcError) {
+        console.error("Error inserting profile + skills:", rpcError.message);
+      } else {
+        console.log("Profile + skills inserted!");
+      }
+    }
+    if (signup.user) {
+      navigate("/login");
+    }
     console.log("Signup data:", formData);
     alert("Account created successfully! (This is a demo)");
     setFormData({
@@ -52,6 +92,15 @@ export default function Signup() {
       skillsWanted: [],
     });
   };
+ async function checkAlreadyLoggedIn(){
+    const { data: session } = await supabase.auth.getSession();
+    if(session && session.session){
+      navigate("/");
+    }   
+  }
+  useEffect(()=>{
+checkAlreadyLoggedIn();
+  },[])
 
   return (
     <div className="bg-slate-900 min-h-screen flex items-center justify-center p-4">
@@ -198,25 +247,25 @@ function InputField({
 }) {
   return (
     <>
-    <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1">
-        {label}
-      </label>
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <FontAwesomeIcon icon={icon} className="text-slate-500" />
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-1">
+          {label}
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FontAwesomeIcon icon={icon} className="text-slate-500" />
+          </div>
+          <input
+            type={type}
+            name={name}
+            value={value}
+            onChange={onChange}
+            className="bg-slate-700 text-slate-200 w-full pl-10 pr-4 py-3 rounded-lg border border-slate-600 focus:outline-none input-focus transition-all"
+            placeholder={placeholder}
+            required
+          />
         </div>
-        <input
-          type={type}
-          name={name}
-          value={value}
-          onChange={onChange}
-          className="bg-slate-700 text-slate-200 w-full pl-10 pr-4 py-3 rounded-lg border border-slate-600 focus:outline-none input-focus transition-all"
-          placeholder={placeholder}
-          required
-        />
       </div>
-    </div>
     </>
   );
 }

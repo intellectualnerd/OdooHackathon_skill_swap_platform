@@ -5,7 +5,7 @@ import {
   faClock,
   faExchangeAlt,
 } from "@fortawesome/free-solid-svg-icons";
-
+import { useSelector } from "react-redux";
 const skills = [
   "Web Development",
   "Graphic Design",
@@ -91,6 +91,10 @@ const users = [
 ];
 
 export default function SkillSwapApp() {
+
+  const {profile,user}=useSelector(state=>state.auth)
+  console.log(profile,"a",user)
+
   const [filteredUsers, setFilteredUsers] = useState(users);
   const [filters, setFilters] = useState({
     skillWanted: "",

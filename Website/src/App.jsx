@@ -1,5 +1,6 @@
 import { useState } from "react";
-
+import usecheckAuth from "./hooks/useauthCheck";
+import { AuthRoute } from "./auth/AuthRoute";
 function App() {
   return (
     <>

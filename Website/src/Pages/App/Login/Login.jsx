@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserShield,
@@ -9,6 +9,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
+import { supabase } from "../../../utils/supabaseClient";
+
 export default function Login() {
   const navigate = useNavigate();
 
@@ -16,13 +18,42 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ email, password });
+const {data,error}=await supabase.auth.signInWithPassword({
+  email:email,
+  password:password
+})
+if (error) {
+  if (error.message === "Invalid login credentials") {
+    alert("Email or password is incorrect.");
+  } else {
+    alert("Something went wrong: " + error.message);
+  }
+}
+else{
+  if(data.user){
+    navigate("/")
+  }
+}
+    console.log({
+      email,
+      password,
+    });
+
     alert("Login successful! (This is a demo)");
     setEmail("");
     setPassword("");
   };
+ async function checkAlreadyLoggedIn(){
+    const { data: session } = await supabase.auth.getSession();
+    if(session && session.session){
+      navigate("/");
+    }   
+  }
+  useEffect(()=>{
+checkAlreadyLoggedIn();
+  },[])
 
   return (
     <div className="bg-slate-900 min-h-screen flex items-center justify-center px-4">
