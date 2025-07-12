@@ -26,6 +26,7 @@ import About from './Pages/App/About/About';
 import Login from './Pages/App/Login/Login';
 import Signup from './Pages/App/Signup/Signup';
 import Profile from './Pages/App/Profile/Profile';
+import Requests from './Pages/App/Requests/requests';
 import Error_404 from './Pages/Error/Error_404/Error_404';
 import Error_500 from './Pages/Error/Error_500/Error_500';
 
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
       {
         path: "/profile",
         element: <Profile />,
+      },
+      {
+        path: "/requests",
+        element: <Requests />,
       },
       // {
       //   path: "/projects",
