@@ -1,8 +1,6 @@
-// Profile.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SkillInput from "../Signup/SkillInput";
 import {
-  faUser,
   faEnvelope,
   faMapMarkerAlt,
   faClock,
@@ -12,48 +10,153 @@ import {
   faSave,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
-const allSkills = [
-  "Web Development",
-  "Graphic Design",
-  "Content Writing",
-  "Video Editing",
-  "SEO",
-  "Digital Marketing",
-];
+import { useSelector } from "react-redux";
+import { supabase } from "../../../utils/supabaseClient";
 
 const Profile = () => {
+  const { profile, user: authUser } = useSelector((state) => state.auth);
+
+  const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [user, setUser] = useState({
-    name: "John Doe",
-    email: "john@example.com",
-    location: "New York, USA",
-    photoURL: "https://randomuser.me/api/portraits/men/45.jpg",
-    availability: "weekdays",
-    skillsOffered: ["Web Development", "Content Writing"],
-    skillsWanted: ["Graphic Design"],
-    visibility: "public",
-  });
+  const [loading, setLoading] = useState(false);
+
+  const [allOfferedSkills, setAllOfferedSkills] = useState([]);
+  const [allWantedSkills, setAllWantedSkills] = useState([]);
+
+  // Load user profile and skills
+  useEffect(() => {
+    if (profile) {
+      setUser({
+        name: profile.name || "",
+        email: profile.email || "",
+        location: profile.location || "",
+        photoURL: profile.image_url || "",
+        availability: profile.availability || "weekdays",
+        skillsOffered: [],
+        skillsWanted: [],
+        profile_status: profile.profile_status || "public",
+      });
+      fetchUserSkills(profile.user_id || authUser?.id);
+    }
+    fetchAllSkills();
+  }, [profile]);
+
+  const fetchAllSkills = async () => {
+    const offered = await supabase
+      .from("user_skills_offered")
+      .select("skills_offered", { distinct: true });
+    const wanted = await supabase
+      .from("user_skills_wanted")
+      .select("skills_wanted", { distinct: true });
+
+    if (!offered.error) {
+      const unique = [
+        ...new Set(offered.data.map((d) => d.skills_offered).filter(Boolean)),
+      ];
+      setAllOfferedSkills(unique);
+    }
+
+    if (!wanted.error) {
+      const unique = [
+        ...new Set(wanted.data.map((d) => d.skills_wanted).filter(Boolean)),
+      ];
+      setAllWantedSkills(unique);
+    }
+  };
+
+  const fetchUserSkills = async (user_id) => {
+    const { data: offered } = await supabase
+      .from("user_skills_offered")
+      .select("skills_offered")
+      .eq("user_id", user_id);
+
+    const { data: wanted } = await supabase
+      .from("user_skills_wanted")
+      .select("skills_wanted")
+      .eq("user_id", user_id);
+
+    setUser((prev) => ({
+      ...prev,
+      skillsOffered: offered?.map((d) => d.skills_offered) || [],
+      skillsWanted: wanted?.map((d) => d.skills_wanted) || [],
+    }));
+  };
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const userId = profile?.user_id || authUser?.id;
+    if (!user || !userId) return alert("Missing user ID");
+
     setIsEditing(false);
-    alert("Profile saved!");
+    setLoading(true);
+
+    const updates = {
+      name: user.name,
+      email: user.email,
+      location: user.location,
+      image_url: user.photoURL,
+      availability: user.availability,
+      profile_status: user.profile_status,
+    };
+
+    const { error: profileError } = await supabase
+      .from("user_profile")
+      .update(updates)
+      .eq("user_id", userId);
+
+    // Clear old skills
+    await supabase.from("user_skills_offered").delete().eq("user_id", userId);
+    await supabase.from("user_skills_wanted").delete().eq("user_id", userId);
+
+    // Insert new skills
+    const offeredInsert = user.skillsOffered.map((skill) => ({
+      user_id: userId,
+      skills_offered: skill,
+    }));
+    const wantedInsert = user.skillsWanted.map((skill) => ({
+      user_id: userId,
+      skills_wanted: skill,
+    }));
+
+    const { error: offeredError } = await supabase
+      .from("user_skills_offered")
+      .insert(offeredInsert);
+    const { error: wantedError } = await supabase
+      .from("user_skills_wanted")
+      .insert(wantedInsert);
+
+    setLoading(false);
+
+    if (profileError || offeredError || wantedError) {
+      console.error({ profileError, offeredError, wantedError });
+      return alert("❌ Failed to update profile or skills");
+    }
+
+    alert("✅ Profile updated!");
   };
 
-  const toggleVisibility = () => {
+  const toggleStatus = () => {
+    if (!user) return;
     setUser({
       ...user,
-      visibility: user.visibility === "public" ? "private" : "public",
+      profile_status: user.profile_status === "public" ? "private" : "public",
     });
   };
 
+  if (!user) {
+    return (
+      <div className="bg-slate-900 text-white min-h-screen flex items-center justify-center">
+        <p className="text-slate-400">Loading profile...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-slate-900" style={{minHeight:"100vh"}}>
-      <div className=" bg-slate-900 text-white flex justify-center p-4 pt-5">
+    <div className="bg-slate-900 min-h-screen">
+      <div className="text-white flex justify-center p-4 pt-5">
         <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 flex flex-col sm:flex-row overflow-hidden w-full max-w-3xl">
           {/* Profile Picture */}
           <div className="sm:w-1/3 flex items-center justify-center bg-slate-700 p-4">
@@ -81,17 +184,22 @@ const Profile = () => {
               </h2>
               <button
                 onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-                className="text-slate-300 hover:text-white text-xs"
+                className="text-slate-300 hover:text-white text-xs flex items-center"
+                disabled={loading}
               >
                 <FontAwesomeIcon
                   icon={isEditing ? faSave : faPen}
                   className="mr-1"
+                  spin={loading && isEditing}
                 />
-                {isEditing ? "Save" : "Edit"}
+                {loading && isEditing
+                  ? "Saving..."
+                  : isEditing
+                  ? "Save"
+                  : "Edit"}
               </button>
             </div>
 
-            {/* Email & Location */}
             <p>
               <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
               {isEditing ? (
@@ -120,7 +228,6 @@ const Profile = () => {
               )}
             </p>
 
-            {/* Availability */}
             <p>
               <FontAwesomeIcon icon={faClock} className="mr-2" />
               {isEditing ? (
@@ -139,13 +246,13 @@ const Profile = () => {
               )}
             </p>
 
-            {/* Skills */}
+            {/* Skills Offered */}
             <div className="text-xs">
               <span className="text-blue-400 font-medium">Offers:</span>
               {isEditing ? (
                 <SkillInput
                   placeholder="Add skill..."
-                  suggestions={allSkills}
+                  suggestions={allOfferedSkills}
                   onChange={(skills) =>
                     setUser({ ...user, skillsOffered: skills })
                   }
@@ -164,12 +271,13 @@ const Profile = () => {
               )}
             </div>
 
+            {/* Skills Wanted */}
             <div className="text-xs">
               <span className="text-purple-400 font-medium">Wants:</span>
               {isEditing ? (
                 <SkillInput
                   placeholder="Add skill..."
-                  suggestions={allSkills}
+                  suggestions={allWantedSkills}
                   onChange={(skills) =>
                     setUser({ ...user, skillsWanted: skills })
                   }
@@ -188,16 +296,16 @@ const Profile = () => {
               )}
             </div>
 
-            {/* Visibility Toggle */}
+            {/* Profile Status */}
             <button
-              onClick={toggleVisibility}
+              onClick={toggleStatus}
               className="mt-1 text-slate-400 hover:text-white text-xs"
             >
               <FontAwesomeIcon
-                icon={user.visibility === "public" ? faEye : faEyeSlash}
+                icon={user.profile_status === "public" ? faEye : faEyeSlash}
                 className="mr-1"
               />
-              {user.visibility === "public" ? "Public" : "Private"}
+              {user.profile_status === "public" ? "Public" : "Private"}
             </button>
           </div>
         </div>
