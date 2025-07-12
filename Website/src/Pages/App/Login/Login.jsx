@@ -1,10 +1,19 @@
 import React, { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUserShield,
+  faEnvelope,
+  faLock,
+  faEye,
+  faEyeSlash,
+} from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e) => {
@@ -12,18 +21,14 @@ export default function Login() {
 
     console.log({
       email,
-      role,
       password,
-      remember,
     });
 
     alert("Login successful! (This is a demo)");
 
     // Reset form
     setEmail("");
-    setRole("");
     setPassword("");
-    setRemember(false);
   };
 
   return (
@@ -31,8 +36,11 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="bg-slate-800 rounded-xl p-8 custom-shadow transition-all hover:shadow-xl">
           <div className="text-center mb-8">
-            <i className="fas fa-user-shield text-5xl text-slate-300 mb-4"></i>
-            <h1 className="text-3xl font-bold text-slate-100">Welcome Back</h1>
+            <FontAwesomeIcon
+              icon={faUserShield}
+              className="text-5xl text-slate-300 mb-4"
+            />
+            <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
             <p className="text-slate-400 mt-2">
               Please enter your credentials to login
             </p>
@@ -45,7 +53,10 @@ export default function Login() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-envelope text-slate-500"></i>
+                  <FontAwesomeIcon
+                    icon={faEnvelope}
+                    className="text-slate-500"
+                  />
                 </div>
                 <input
                   type="email"
@@ -60,39 +71,11 @@ export default function Login() {
 
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1">
-                Role
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-user-tag text-slate-500"></i>
-                </div>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  required
-                  className="bg-slate-700 text-slate-200 w-full pl-10 pr-4 py-3 rounded-lg border border-slate-600 focus:outline-none input-focus appearance-none transition-all"
-                >
-                  <option value="" disabled>
-                    Select your role
-                  </option>
-                  <option value="admin">Administrator</option>
-                  <option value="manager">Manager</option>
-                  <option value="editor">Editor</option>
-                  <option value="viewer">Viewer</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <i className="fas fa-chevron-down text-slate-500"></i>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">
                 Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i className="fas fa-lock text-slate-500"></i>
+                  <FontAwesomeIcon icon={faLock} className="text-slate-500" />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -107,11 +90,10 @@ export default function Login() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
-                  <i
-                    className={`fas ${
-                      showPassword ? "fa-eye-slash" : "fa-eye"
-                    } text-slate-500 hover:text-slate-300`}
-                  ></i>
+                  <FontAwesomeIcon
+                    icon={showPassword ? faEyeSlash : faEye}
+                    className="text-slate-500 hover:text-slate-300"
+                  />
                 </button>
               </div>
               <div className="flex justify-end mt-2">
@@ -122,22 +104,6 @@ export default function Login() {
                   Forgot password?
                 </a>
               </div>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                id="remember"
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                className="h-4 w-4 text-slate-600 focus:ring-slate-500 border-slate-600 rounded bg-slate-700"
-              />
-              <label
-                htmlFor="remember"
-                className="ml-2 block text-sm text-slate-400"
-              >
-                Remember me
-              </label>
             </div>
 
             <button
@@ -151,19 +117,19 @@ export default function Login() {
           <div className="mt-6 text-center">
             <p className="text-sm text-slate-500">
               Don't have an account?
-              <a
-                href="#"
-                className="font-medium text-slate-400 hover:text-slate-300 transition-colors ml-1"
+              <span
+                onClick={() => navigate("/signup")}
+                className="font-medium text-slate-400 hover:text-slate-300 transition-colors ml-1 cursor-pointer"
               >
                 Sign up
-              </a>
+              </span>
             </p>
           </div>
         </div>
 
         <div className="mt-6 text-center">
           <p className="text-xs text-slate-500">
-            © 2023 Your Company. All rights reserved.
+            © 2025 Your Company. All rights reserved.
           </p>
         </div>
       </div>

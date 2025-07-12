@@ -23,6 +23,8 @@ import AppLayout from './AppLayout/AppLayout';
 import Home from './Pages/App/Home/Home'
 import Product from './Pages/App/Product/Product';
 import About from './Pages/App/About/About';
+import Login from './Pages/App/Login/Login';
+import Signup from './Pages/App/Signup/Signup';
 import Error_404 from './Pages/Error/Error_404/Error_404';
 import Error_500 from './Pages/Error/Error_500/Error_500';
 
@@ -44,6 +46,14 @@ const router = createBrowserRouter([
       {
         path: "/about",
         element: <About />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/signup",
+        element: <Signup />,
       },
       // {
       //   path: "/projects",
