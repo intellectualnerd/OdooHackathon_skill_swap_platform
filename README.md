@@ -2,7 +2,7 @@
 ### Project : Skill Swap Platform
 Skill Swap Platform is a mini app where users list skills they offer and want in return. Users can manage profiles, set availability, send/accept swap requests, and give feedback. Admins moderate content, manage users, track swaps, and send platform-wide messages. A peer-to-peer space to connect and grow.
 Here's a well-organized version of your team details for the **Odoo Community Hackathon 2025** under the **StackIt – A Minimal Q\&A Forum Platform** problem statement:
-Video Link Of Project : https://www.youtube.com/watch?v=LS6MQ8KgR68
+Video Link Of Project : https://www.youtube.com/watch?v=7EYnnPcytcM
 
 ### 👨‍💻 Team Details (Team Leader: Parmar Parth Kiritbhai)
 
