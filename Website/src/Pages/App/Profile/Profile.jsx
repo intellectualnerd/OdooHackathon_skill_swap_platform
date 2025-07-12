@@ -12,6 +12,7 @@ import {
   faSave,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useSelector } from "react-redux";
 
 const allSkills = [
   "Web Development",
@@ -23,6 +24,9 @@ const allSkills = [
 ];
 
 const Profile = () => {
+    
+  const {profile,userInfo}=useSelector(state=>state.auth)
+  console.log(profile, "a", userInfo);
   const [isEditing, setIsEditing] = useState(false);
   const [user, setUser] = useState({
     name: "John Doe",
